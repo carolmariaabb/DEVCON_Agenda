@@ -12,11 +12,11 @@ public class Agenda implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private int day;
-    private String start;
-    private String end;
+    private Integer start;
+    private Integer end;
     private String title;
 
-    public Agenda(int day, String start, String end, String title){
+    public Agenda(int day, Integer start, Integer end, String title){
         this.day = day;
         this.start = start;
         this.end = end;

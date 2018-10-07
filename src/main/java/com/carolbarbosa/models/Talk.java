@@ -13,9 +13,9 @@ public class Talk implements Serializable {
 
     private String title;
     private Integer priority;
-    private Double duration;
+    private Integer duration;
 
-    public Talk(String title, Double duration, Integer priority){
+    public Talk(String title, Integer duration, Integer priority){
         this.title = title;
         this.duration = duration;
         this.priority = priority;
