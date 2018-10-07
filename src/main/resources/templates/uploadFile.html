@@ -1,24 +1,40 @@
 <html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    </head>
     <body>
-        <div th:if="${message}">
-            <h2 th:text="${message}"/>
-        </div>
-        <div>
+        <div class="container">
+            <h2>DEVCON Agenda</h2>
             <form method="POST" enctype="multipart/form-data" action="/">
-                <table>
-                    <tr><td>File to upload:</td><td><input type="file" name="file" /></td></tr>
-                    <tr><td></td><td><input type="submit" value="Upload" /></td></tr>
-                </table>
+                <div class="form-group">
+                    <input type="file" class="form-control-file" id="exampleFormControlFile1" name="file">
+                </div>
+                <button type="submit" class="btn btn-primary">Enviar</button>
             </form>
         </div>
-        <div>
-            <table>
-                <tr th:each="talk : ${talkList}">
-                    <td th:text="${talk.title}">Titulo</td>
-                    <td th:text="${talk.duration}">Duração</td>
-                    <td th:text="${talk.priority}">Prioridade</td>
-                </tr>
+        <div class="container" th:if="${message}">
+            <p th:text="${message}"></p>
+            <table class="table table-bordered" th:if="${talkList}">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Duração</th>
+                        <th>Prioridade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="talk : ${talkList}">
+                        <td th:text="${talk.title}"></td>
+                        <td th:text="${talk.duration}"></td>
+                        <td th:text="${talk.priority}"></td>
+                    </tr>
+                </tbody>
             </table>
+            <form method="POST" action="/deleteTalks">
+                <button type="submit" class="btn btn-primary" style="float: right">Limpar</button>
+            </form>
         </div>
     </body>
 </html>

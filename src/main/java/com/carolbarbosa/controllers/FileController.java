@@ -27,6 +27,12 @@ public class FileController {
         return "uploadFile";
     }
 
+    @PostMapping("/deleteTalks")
+    public String deleteTalks() {
+        talkService.removeAll();
+        return "redirect:/";
+    }
+
     @PostMapping("/")
     public String uploadFile(@RequestParam("file") MultipartFile file,
                              RedirectAttributes redirectAttributes) {
@@ -43,7 +49,7 @@ public class FileController {
                     Integer.parseInt(columns[2])));
         }
 
-        redirectAttributes.addFlashAttribute("message", "Arquivo " + file.getOriginalFilename() + " enviado com sucesso !");
+        redirectAttributes.addFlashAttribute("message", "Arquivo " + file.getOriginalFilename() + " enviado com sucesso!");
         redirectAttributes.addFlashAttribute("talkList", talkService.findAll());
         return "redirect:/";
     }
