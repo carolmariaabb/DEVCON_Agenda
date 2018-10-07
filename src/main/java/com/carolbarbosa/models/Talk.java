@@ -13,10 +13,10 @@ public class Talk {
     private Integer priority;
     private Double duration;
 
-    public Talk(String title, Integer priority, Double duration){
+    public Talk(String title, Double duration, Integer priority){
         this.title = title;
-        this.priority = priority;
         this.duration = duration;
+        this.priority = priority;
     }
 
     @Override

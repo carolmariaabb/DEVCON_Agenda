@@ -28,10 +28,23 @@ public class FileController {
     }
 
     @PostMapping("/")
-    public String uploadFile(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
+    public String uploadFile(@RequestParam("file") MultipartFile file,
+                             RedirectAttributes redirectAttributes) {
+
         List<String> lines = handleFileUpload.readCSVFile(file);
-        if(lines.size() > 1) lines.remove(0); //remove title
-        redirectAttributes.addFlashAttribute("message", "You successfully uploaded " + file.getOriginalFilename() + "!");
+        if (lines.size() > 1) lines.remove(0); //remove cabecalho
+
+        //criando lista de palestras
+        talkService.removeAll();
+        for (String line : lines) {
+            String[] columns = line.split(";");
+            if (columns.length < 3) break;
+            talkService.add(new Talk(columns[0], Double.parseDouble(columns[1]),
+                    Integer.parseInt(columns[2])));
+        }
+
+        redirectAttributes.addFlashAttribute("message", "Arquivo " + file.getOriginalFilename() + " enviado com sucesso !");
+        redirectAttributes.addFlashAttribute("talkList", talkService.findAll());
         return "redirect:/";
     }
 }

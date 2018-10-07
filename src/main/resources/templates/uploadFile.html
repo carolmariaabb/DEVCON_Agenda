@@ -11,5 +11,14 @@
                 </table>
             </form>
         </div>
+        <div>
+            <table>
+                <tr th:each="talk : ${talkList}">
+                    <td th:text="${talk.title}">Titulo</td>
+                    <td th:text="${talk.duration}">Duração</td>
+                    <td th:text="${talk.priority}">Prioridade</td>
+                </tr>
+            </table>
+        </div>
     </body>
 </html>
