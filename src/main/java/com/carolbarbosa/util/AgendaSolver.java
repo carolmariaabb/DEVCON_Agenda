@@ -5,7 +5,9 @@ import com.carolbarbosa.models.Knapsack;
 import com.carolbarbosa.models.Talk;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AgendaSolver {
 
@@ -13,17 +15,17 @@ public class AgendaSolver {
 
     public List<Agenda> createAgenda(List<Talk> talks, int day){
         List<Agenda> agendaList = new ArrayList<Agenda>();
-        int[][] matrix = createMatrix(talks);
-        Knapsack knapsack = createKnapsack(matrix, talks);
+        Knapsack knapsack = solveKnapsack(talks);
 
-        for(Talk t : knapsack.items){
-            Agenda agenda = new Agenda(day,0, 0, t.getTitle());
-            agendaList.add(agenda);
+        for(Map.Entry<Integer, Talk> item : knapsack.items.entrySet()) {
+            Integer key = item.getKey();
+            Talk value = item.getValue();
+            agendaList.add(new Agenda(day,0, 0, value.getTitle(), key));
         }
         return agendaList;
     }
 
-    public int[][] createMatrix(List<Talk> talks){
+    public Knapsack solveKnapsack(List<Talk> talks){
         int count = talks.size();
         //capacidade da mochila eh total de minutos 9h ate 19h = 600minutos
         int[][] matrix = new int[count + 1][TOTAL_MINUTES_DAY + 1];
@@ -42,18 +44,18 @@ public class AgendaSolver {
                 }
             }
         }
-        return matrix;
+        return createKnapsack(matrix, talks);
     }
 
     public Knapsack createKnapsack(int[][] matrix, List<Talk> talks){
+        Map<Integer,Talk> itemsSolution = new HashMap<Integer, Talk>();
         int count = talks.size();
         int res = matrix[count][TOTAL_MINUTES_DAY];
         int w = TOTAL_MINUTES_DAY;
-        List<Talk> itemsSolution = new ArrayList<>();
 
         for (int i = count; i > 0  &&  res > 0; i--) {
             if (res != matrix[i-1][w]) {
-                itemsSolution.add(talks.get(i - 1));
+                itemsSolution.put(i - 1, talks.get(i - 1));
                 res -= talks.get(i - 1).getPriority();
                 w -= talks.get(i - 1).getDuration();
             }

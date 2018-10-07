@@ -21,4 +21,9 @@ public class AgendaDAO {
     public void removeAll(){
         this.agenda = new ArrayList<Agenda>();
     }
+
+    public void setAgenda(List<Agenda> agendaList) {
+        this.agenda = null;
+        this.agenda = agendaList;
+    }
 }

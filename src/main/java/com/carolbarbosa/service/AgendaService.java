@@ -23,4 +23,6 @@ public class AgendaService {
     public void removeAll() {
         agendaDAO.removeAll();
     }
+
+    public void setAgenda(List<Agenda> agendaList) { agendaDAO.setAgenda(agendaList); }
 }

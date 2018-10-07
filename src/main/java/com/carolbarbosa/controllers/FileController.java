@@ -81,8 +81,17 @@ public class FileController {
 
         talkService.sortByPriorityDesc();
 
-        List<Agenda> agendaDay1 = agendaSolver.createAgenda(talkService.findAll(), 1);
-        List<Agenda> agendaDay2 = agendaSolver.createAgenda(talkService.findAll(), 2);
+        //Criacao de agendax
+        List<Talk> talksAuxList = new ArrayList<>(talkService.findAll());
+        List<Agenda> agendaDay1 = agendaSolver.createAgenda(talksAuxList, 1);
+        //remove palestras que ja estao na agenda, menos os intervalos obrigatorios
+        for(Agenda a : agendaDay1){
+            if(talkService.getByIndex(a.getIdTalk()).getPriority() <= highPriority)
+                talksAuxList.remove(a.getIdTalk());
+        }
+        List<Agenda> agendaDay2 = agendaSolver.createAgenda(talksAuxList, 2);
+        agendaDay1.addAll(agendaDay2);
+        agendaService.setAgenda(agendaDay1);
 
         redirectAttributes.addFlashAttribute("message", "Arquivo " + file.getOriginalFilename() + " enviado com sucesso!");
         redirectAttributes.addFlashAttribute("talkList", talkService.findAll());
