@@ -1,9 +1,8 @@
 package com.carolbarbosa.controllers;
 
-import com.carolbarbosa.models.Agenda;
-import com.carolbarbosa.models.Knapsack;
+import com.carolbarbosa.models.AgendaItem;
 import com.carolbarbosa.models.Talk;
-import com.carolbarbosa.service.AgendaService;
+import com.carolbarbosa.service.AgendaItemService;
 import com.carolbarbosa.service.TalkService;
 import com.carolbarbosa.util.AgendaSolver;
 import com.carolbarbosa.util.HandleFile;
@@ -20,24 +19,28 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Controller
 public class FileController {
 
     private final TalkService talkService;
-    private final AgendaService agendaService;
+    private final AgendaItemService agendaItemService;
     private final HandleFile handleFileUpload = new HandleFile();
     private final AgendaSolver agendaSolver = new AgendaSolver();
+    private static final String CR_LF = "\r\n";
     private Integer highPriority = 0;
 
     @Autowired
     private ServletContext servletContext;
 
-    public FileController(TalkService talkService, AgendaService agendaService) {
+    public FileController(TalkService talkService, AgendaItemService agendaItemService) {
         this.talkService = talkService;
-        this.agendaService = agendaService;
+        this.agendaItemService = agendaItemService;
     }
 
     @GetMapping("/")
@@ -62,7 +65,7 @@ public class FileController {
         for (String line : lines) {
             String[] columns = line.split(";");
             if (columns.length < 3) break;
-            talkService.add(new Talk(columns[0], Integer.parseInt(columns[1]), Integer.parseInt(columns[2])));
+            talkService.add(new Talk(columns[0], Integer.parseInt(columns[1]), Integer.parseInt(columns[2]), false));
         }
         if(talkService.count() < 1) return "redirect:/";
 
@@ -70,28 +73,32 @@ public class FileController {
         highPriority = talkService.getByIndex(0).getPriority();
 
         //criando lista de intervalos
-        Talk coffeBreakMorning = new Talk("coffe_break_1", 30, highPriority + 120);
+        Talk coffeBreakMorning = new Talk("coffe_break_1", 30, highPriority + 120, false);
         talkService.add(coffeBreakMorning);
 
-        Talk lunchBreak = new Talk("lunch_break", 90, highPriority + 110);
+        Talk lunchBreak = new Talk("lunch_break", 90, highPriority + 110, false);
         talkService.add(lunchBreak);
 
-        Talk coffeBreakAfternoon = new Talk("coffe_break_2", 30, highPriority + 100);
+        Talk coffeBreakAfternoon = new Talk("coffe_break_2", 30, highPriority + 100, false);
         talkService.add(coffeBreakAfternoon);
 
         talkService.sortByPriorityDesc();
 
-        //Criacao de agendax
+        //Criacao de agenda
         List<Talk> talksAuxList = new ArrayList<>(talkService.findAll());
-        List<Agenda> agendaDay1 = agendaSolver.createAgenda(talksAuxList, 1);
-        //remove palestras que ja estao na agenda, menos os intervalos obrigatorios
-        for(Agenda a : agendaDay1){
-            if(talkService.getByIndex(a.getIdTalk()).getPriority() <= highPriority)
-                talksAuxList.remove(a.getIdTalk());
+        List<AgendaItem> agenda = agendaSolver.createAgenda(talksAuxList, 1);
+        //seta palestras que ja estao na agenda, menos os intervalos obrigatorios
+        for(AgendaItem a : agenda){
+            if(talkService.getByIndex(a.getIdTalk()).getPriority() <= highPriority){
+                talkService.getByIndex(a.getIdTalk()).setIsOnAgenda(true);
+            }
         }
-        List<Agenda> agendaDay2 = agendaSolver.createAgenda(talksAuxList, 2);
-        agendaDay1.addAll(agendaDay2);
-        agendaService.setAgenda(agendaDay1);
+
+        talksAuxList = new ArrayList<>(talkService.findAll().stream().filter(not(Talk::getIsOnAgenda)).collect(Collectors.toList()));
+        List<AgendaItem> agendaDay2 = agendaSolver.createAgenda(talksAuxList, 2);
+
+        agenda.addAll(agendaDay2);
+        agendaItemService.setAgenda(agenda);
 
         redirectAttributes.addFlashAttribute("message", "Arquivo " + file.getOriginalFilename() + " enviado com sucesso!");
         redirectAttributes.addFlashAttribute("talkList", talkService.findAll());
@@ -104,12 +111,11 @@ public class FileController {
         InputStreamResource resource = null;
         MediaType mediaType = null;
         try {
-            StringBuilder result = new StringBuilder();
             String filePath = System.getProperty("java.io.tmpdir") + "output.csv";
             new File(filePath).delete();
 
             FileOutputStream fos = new FileOutputStream(filePath);
-            fos.write(result.toString().getBytes());
+            fos.write(getOutputCSV().getBytes());
             fos.close();
 
             file = new File(filePath);
@@ -122,5 +128,28 @@ public class FileController {
         }
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + file.getName())
                 .contentType(mediaType).contentLength(file.length()).body(resource);
+    }
+
+    public String getOutputCSV(){
+        DecimalFormat formatter = new DecimalFormat("00");
+        StringBuilder result = new StringBuilder();
+        result.append("day;start;end;title");
+        result.append(CR_LF);
+        for(AgendaItem agendaItem : agendaItemService.findAll()){
+            String hourStart = formatter.format(agendaItem.getStart()/60);
+            String minuteStart = formatter.format(agendaItem.getStart() % 60);
+
+            String hourEnd = formatter.format(agendaItem.getEnd()/60);
+            String minuteEnd = formatter.format(agendaItem.getEnd() % 60);
+
+            result.append(agendaItem.getDay() + ";" + hourStart + ":" + minuteStart + ";" + hourEnd
+                    + ":" + minuteEnd + ";" + agendaItem.getTitle());
+            result.append(CR_LF);
+        }
+        return result.toString();
+    }
+
+    public static <T> Predicate<T> not(Predicate<T> t) {
+        return t.negate();
     }
 }

@@ -1,6 +1,6 @@
 package com.carolbarbosa.util;
 
-import com.carolbarbosa.models.Agenda;
+import com.carolbarbosa.models.AgendaItem;
 import com.carolbarbosa.models.Knapsack;
 import com.carolbarbosa.models.Talk;
 
@@ -13,16 +13,16 @@ public class AgendaSolver {
 
     private final static int TOTAL_MINUTES_DAY = 600;
 
-    public List<Agenda> createAgenda(List<Talk> talks, int day){
-        List<Agenda> agendaList = new ArrayList<Agenda>();
+    public List<AgendaItem> createAgenda(List<Talk> talks, int day){
+        List<AgendaItem> agendaItemList = new ArrayList<AgendaItem>();
         Knapsack knapsack = solveKnapsack(talks);
 
         for(Map.Entry<Integer, Talk> item : knapsack.items.entrySet()) {
             Integer key = item.getKey();
             Talk value = item.getValue();
-            agendaList.add(new Agenda(day,0, 0, value.getTitle(), key));
+            agendaItemList.add(new AgendaItem(day,540, 570, value.getTitle(), key));
         }
-        return agendaList;
+        return agendaItemList;
     }
 
     public Knapsack solveKnapsack(List<Talk> talks){
