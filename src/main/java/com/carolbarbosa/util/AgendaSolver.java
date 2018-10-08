@@ -11,16 +11,45 @@ import java.util.Map;
 
 public class AgendaSolver {
 
-    private final static int TOTAL_MINUTES_DAY = 600;
+    private final static int TOTAL_MINUTES_DAY = 450;
 
     public List<AgendaItem> createAgenda(List<Talk> talks, int day){
         List<AgendaItem> agendaItemList = new ArrayList<AgendaItem>();
         Knapsack knapsack = solveKnapsack(talks);
 
+        int start = 540; //9h em minutos
+        int durationInc = 0; //incrementar soma da duracao das palestras
+        int intervalo = 1; //primeiro intervalo
+
         for(Map.Entry<Integer, Talk> item : knapsack.items.entrySet()) {
             Integer key = item.getKey();
             Talk value = item.getValue();
-            agendaItemList.add(new AgendaItem(day,540, 570, value.getTitle(), key));
+            durationInc = value.getDuration() + durationInc;
+
+            if(durationInc >= 180 && intervalo == 1){ //se a soma passou de 12 - 9 = 3*60min, tem que fazer intervalo antes
+                start = start + 30;
+                durationInc = durationInc + 30;
+                intervalo = 2;
+            }else if(durationInc >= 450 && intervalo == 3){ //se a soma passou de 16h30 - 9 = (7*60)+30min, tem que fazer intervalo antes
+                start = start + 30;
+                durationInc = durationInc + 30;
+                intervalo = 4;
+            }
+            agendaItemList.add(new AgendaItem(day, start, start + value.getDuration(), value.getTitle(), key));
+            start = start + value.getDuration();
+            if(durationInc > 240 && durationInc <= 270 && intervalo == 2){
+                start = start + 90;
+                durationInc = durationInc + 90;
+                intervalo = 3;
+            }else if(durationInc > 270 && intervalo == 2){ //passou de 13h30, terceiro intervalo vai acabar dps das 15h
+                intervalo = 3;
+            }
+        }
+        if(durationInc < 540){ //acabou antes das 18h
+            int duration = agendaItemList.get(agendaItemList.size() - 1).getEnd() - agendaItemList.get(agendaItemList.size() - 1).getStart();
+            agendaItemList.get(agendaItemList.size() - 1).setEnd(1140);
+            agendaItemList.get(agendaItemList.size() - 1).setStart(1140 - duration);
+            //19h = 1140 min
         }
         return agendaItemList;
     }

@@ -68,35 +68,17 @@ public class FileController {
             talkService.add(new Talk(columns[0], Integer.parseInt(columns[1]), Integer.parseInt(columns[2]), false));
         }
         if(talkService.count() < 1) return "redirect:/";
-
-        talkService.sortByPriorityDesc();
-        highPriority = talkService.getByIndex(0).getPriority();
-
-        //criando lista de intervalos
-        Talk coffeBreakMorning = new Talk("coffe_break_1", 30, highPriority + 120, false);
-        talkService.add(coffeBreakMorning);
-
-        Talk lunchBreak = new Talk("lunch_break", 90, highPriority + 110, false);
-        talkService.add(lunchBreak);
-
-        Talk coffeBreakAfternoon = new Talk("coffe_break_2", 30, highPriority + 100, false);
-        talkService.add(coffeBreakAfternoon);
-
         talkService.sortByPriorityDesc();
 
         //Criacao de agenda
         List<Talk> talksAuxList = new ArrayList<>(talkService.findAll());
         List<AgendaItem> agenda = agendaSolver.createAgenda(talksAuxList, 1);
-        //seta palestras que ja estao na agenda, menos os intervalos obrigatorios
+        //seta palestras que ja estao na agenda
         for(AgendaItem a : agenda){
-            if(talkService.getByIndex(a.getIdTalk()).getPriority() <= highPriority){
-                talkService.getByIndex(a.getIdTalk()).setIsOnAgenda(true);
-            }
+            talkService.getByIndex(a.getIdTalk()).setIsOnAgenda(true);
         }
-
         talksAuxList = new ArrayList<>(talkService.findAll().stream().filter(not(Talk::getIsOnAgenda)).collect(Collectors.toList()));
         List<AgendaItem> agendaDay2 = agendaSolver.createAgenda(talksAuxList, 2);
-
         agenda.addAll(agendaDay2);
         agendaItemService.setAgenda(agenda);
 
