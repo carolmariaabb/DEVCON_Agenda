@@ -31,7 +31,6 @@ public class FileController {
     private final TalkService talkService;
     private final AgendaItemService agendaItemService;
     private final HandleFile handleFileUpload = new HandleFile();
-    private final AgendaSolver agendaSolver = new AgendaSolver();
     private static final String CR_LF = "\r\n";
     private Integer highPriority = 0;
 
@@ -70,15 +69,15 @@ public class FileController {
         if(talkService.count() < 1) return "redirect:/";
         talkService.sortByPriorityDesc();
 
-        //Criacao de agenda
+        //Criacao de agend
         List<Talk> talksAuxList = new ArrayList<>(talkService.findAll());
-        List<AgendaItem> agenda = agendaSolver.createAgenda(talksAuxList, 1);
+        List<AgendaItem> agenda = new AgendaSolver().createAgenda(talksAuxList, 1);
         //seta palestras que ja estao na agenda
         for(AgendaItem a : agenda){
             talkService.getByIndex(a.getIdTalk()).setIsOnAgenda(true);
         }
         talksAuxList = new ArrayList<>(talkService.findAll().stream().filter(not(Talk::getIsOnAgenda)).collect(Collectors.toList()));
-        List<AgendaItem> agendaDay2 = agendaSolver.createAgenda(talksAuxList, 2);
+        List<AgendaItem> agendaDay2 = new AgendaSolver().createAgenda(talksAuxList, 2);
         agenda.addAll(agendaDay2);
         agendaItemService.setAgenda(agenda);
 
