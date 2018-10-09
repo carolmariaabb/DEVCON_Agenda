@@ -25,42 +25,46 @@ public class AgendaSolver {
 
         //primeiro intervalo deve acontecer antes das 12h; 12 - 9 = 3h = 180min
         Knapsack knapsack1 = solveKnapsack(talks, 179);
-        createAgendaItens(knapsack1, 30, agendaItemList, day);
+        createAgendaItems(knapsack1, 30, agendaItemList, day);
         talks = new ArrayList<>(talks.stream().filter(not(Talk::getIsOnAgenda)).collect(Collectors.toList()));
 
         //segundo intervalo deve acontecer ate 13h30, pra n acabar dps das 15; e nao comecar antes das 13h
         Knapsack knapsack2 = solveKnapsack(talks, 270 - durationInc);
-        createAgendaItens(knapsack2, 90, agendaItemList, day);
+        createAgendaItems(knapsack2, 90, agendaItemList, day);
         talks = new ArrayList<>(talks.stream().filter(not(Talk::getIsOnAgenda)).collect(Collectors.toList()));
 
         //ultimo da lista acabou antes das 13h
-        if(agendaItemList.get(agendaItemList.size() - 1).getEnd() < 780){
-            int duration = agendaItemList.get(agendaItemList.size() - 1).getEnd() - agendaItemList.get(agendaItemList.size() - 1).getStart();
-            agendaItemList.get(agendaItemList.size() - 1).setEnd(780);
-            agendaItemList.get(agendaItemList.size() - 1).setStart(780 - duration);
-            durationInc = 240 + 90; //intervalo redefinido para 13h
-            startTalk = 780 + 90;
+        if(agendaItemList.size() >= 1){
+            if(agendaItemList.get(agendaItemList.size() - 1).getEnd() < 780){
+                int duration = agendaItemList.get(agendaItemList.size() - 1).getEnd() - agendaItemList.get(agendaItemList.size() - 1).getStart();
+                agendaItemList.get(agendaItemList.size() - 1).setEnd(780);
+                agendaItemList.get(agendaItemList.size() - 1).setStart(780 - duration);
+                durationInc = 240 + 90; //intervalo redefinido para 13h
+                startTalk = 780 + 90;
+            }
         }
 
         //terceiro intervalo deve acontecer antes das 16h30; 16h30 - 9 = 7h30min = 450min
         Knapsack knapsack3 = solveKnapsack(talks, 449 - durationInc);
-        createAgendaItens(knapsack3, 30, agendaItemList, day);
+        createAgendaItems(knapsack3, 30, agendaItemList, day);
         talks = new ArrayList<>(talks.stream().filter(not(Talk::getIsOnAgenda)).collect(Collectors.toList()));
 
-        //segundo intervalo deve acontecer ate 19h; e nao comecar antes das 18h
+        //fim das palestras deve acontecer ate 19h; e nao antes das 18h
         Knapsack knapsack4 = solveKnapsack(talks, 600 - durationInc);
-        createAgendaItens(knapsack4, 0, agendaItemList, day);
+        createAgendaItems(knapsack4, 0, agendaItemList, day);
 
         //ultimo da lista acabou antes das 18h
-        if(agendaItemList.get(agendaItemList.size() - 1).getEnd() < 1080){
-            int duration = agendaItemList.get(agendaItemList.size() - 1).getEnd() - agendaItemList.get(agendaItemList.size() - 1).getStart();
-            agendaItemList.get(agendaItemList.size() - 1).setEnd(1080);
-            agendaItemList.get(agendaItemList.size() - 1).setStart(1080 - duration);
+        if(agendaItemList.size() >= 1) {
+            if (agendaItemList.get(agendaItemList.size() - 1).getEnd() < 1080) {
+                int duration = agendaItemList.get(agendaItemList.size() - 1).getEnd() - agendaItemList.get(agendaItemList.size() - 1).getStart();
+                agendaItemList.get(agendaItemList.size() - 1).setEnd(1080);
+                agendaItemList.get(agendaItemList.size() - 1).setStart(1080 - duration);
+            }
         }
         return agendaItemList;
     }
 
-    public void createAgendaItens(Knapsack knapsack, int breakDuration, List<AgendaItem> agendaItemList, int day){
+    public void createAgendaItems(Knapsack knapsack, int breakDuration, List<AgendaItem> agendaItemList, int day){
         for(Map.Entry<Integer, Talk> item : knapsack.items.entrySet()) {
             Integer key = item.getKey();
             Talk value = item.getValue();

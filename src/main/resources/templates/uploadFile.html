@@ -36,6 +36,38 @@
         </div>
         <div class="container" th:if="${message}">
             <!--<p th:text="${message}"></p>-->
+            <table class="table table-bordered" th:if="${talksNotOnList}">
+                <thead>
+                    <tr>
+                        <th>Palestras Fora da Agenda</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <table class="table table-bordered" th:if="${talksNotOnList}">
+                                <thead>
+                                    <tr>
+                                        <th>Título</th>
+                                        <th>Duração</th>
+                                        <th>Prioridade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="talk : ${talksNotOnList}">
+                                        <td th:text="${talk.title}"></td>
+                                        <td th:text="${talk.duration}"></td>
+                                        <td th:text="${talk.priority}"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="container" th:if="${message}">
+            <!--<p th:text="${message}"></p>-->
             <table class="table table-bordered" th:if="${talkList}">
                 <thead>
                     <tr>

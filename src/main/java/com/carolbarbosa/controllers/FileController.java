@@ -81,8 +81,11 @@ public class FileController {
         agenda.addAll(agendaDay2);
         agendaItemService.setAgenda(agenda);
 
+        talksAuxList = new ArrayList<>(talkService.findAll().stream().filter(not(Talk::getIsOnAgenda)).collect(Collectors.toList()));
+
         redirectAttributes.addFlashAttribute("message", "Arquivo " + file.getOriginalFilename() + " enviado com sucesso!");
         redirectAttributes.addFlashAttribute("talkList", talkService.findAll());
+        redirectAttributes.addFlashAttribute("talksNotOnList", talksAuxList);
         return "redirect:/";
     }
 
