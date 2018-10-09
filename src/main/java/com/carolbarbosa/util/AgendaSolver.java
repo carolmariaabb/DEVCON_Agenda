@@ -88,7 +88,7 @@ public class AgendaSolver {
             durationInc = durationInc + value.getDuration();
         }
         //coloco os intervalos na lista para calcular gaps no fim
-        if(breakDuration != 0) agendaItemList.add(new AgendaItem(day, startTalk, startTalk + breakDuration, "break", -1));
+        if(breakDuration != 0) agendaItemList.add(new AgendaItem(day, startTalk, startTalk + breakDuration, "Break", -1));
         startTalk = startTalk + breakDuration;
         durationInc = durationInc + breakDuration;
     }

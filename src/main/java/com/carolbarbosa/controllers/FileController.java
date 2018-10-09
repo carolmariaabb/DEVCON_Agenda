@@ -57,7 +57,7 @@ public class FileController {
     public String uploadFile(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes,
                                                           HttpServletRequest request) {
         List<String> lines = handleFileUpload.readCSVFile(file);
-        if (lines.size() > 1) lines.remove(0); //remove cabecalho
+        if (lines.size() > 0) lines.remove(0); //remove cabecalho
 
         //criando lista de palestras
         talkService.removeAll();
@@ -69,15 +69,13 @@ public class FileController {
         if(talkService.count() < 1) return "redirect:/";
         talkService.sortByPriorityDesc();
 
-        //Criacao de agend
+        //Criacao de agenda
         List<Talk> talksAuxList = new ArrayList<>(talkService.findAll());
         List<AgendaItem> agenda = new AgendaSolver().createAgenda(talksAuxList, 1);
-        //seta palestras que ja estao na agenda
-        for(AgendaItem a : agenda){
-            if(a.getIdTalk() >= 0) talkService.getByIndex(a.getIdTalk()).setIsOnAgenda(true);
-        }
+
         talksAuxList = new ArrayList<>(talkService.findAll().stream().filter(not(Talk::getIsOnAgenda)).collect(Collectors.toList()));
         List<AgendaItem> agendaDay2 = new AgendaSolver().createAgenda(talksAuxList, 2);
+
         agenda.addAll(agendaDay2);
         agendaItemService.setAgenda(agenda);
 
@@ -132,20 +130,20 @@ public class FileController {
                 String minuteEnd = formatter.format(agendaItem.getStart() % 60);
 
                 result.append(agendaItem.getDay() + ";" + hourStart + ":" + minuteStart + ";" + hourEnd
-                        + ":" + minuteEnd + ";GAP");
+                        + ":" + minuteEnd + ";Gap");
                 result.append(CR_LF);
             }
-            if(agendaItem.getIdTalk() >= 0){
-                String hourStart = formatter.format(agendaItem.getStart()/60);
-                String minuteStart = formatter.format(agendaItem.getStart() % 60);
 
-                String hourEnd = formatter.format(agendaItem.getEnd()/60);
-                String minuteEnd = formatter.format(agendaItem.getEnd() % 60);
+            String hourStart = formatter.format(agendaItem.getStart()/60);
+            String minuteStart = formatter.format(agendaItem.getStart() % 60);
 
-                result.append(agendaItem.getDay() + ";" + hourStart + ":" + minuteStart + ";" + hourEnd
-                        + ":" + minuteEnd + ";" + agendaItem.getTitle());
-                result.append(CR_LF);
-            }
+            String hourEnd = formatter.format(agendaItem.getEnd()/60);
+            String minuteEnd = formatter.format(agendaItem.getEnd() % 60);
+
+            result.append(agendaItem.getDay() + ";" + hourStart + ":" + minuteStart + ";" + hourEnd
+                    + ":" + minuteEnd + ";" + agendaItem.getTitle());
+            result.append(CR_LF);
+
             startTalk = agendaItem.getEnd();
         }
         return result.toString();
