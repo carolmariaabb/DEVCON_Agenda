@@ -24,4 +24,10 @@ public class TalkService {
     public void removeAll() {
         talkDAO.removeAll();
     }
+
+    public void sortByPriorityDesc() { talkDAO.sortByPriorityDesc();}
+
+    public int count() { return talkDAO.count(); }
+
+    public Talk getByIndex(int index) { return talkDAO.getByIndex(index); }
 }

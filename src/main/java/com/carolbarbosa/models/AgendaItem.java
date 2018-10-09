@@ -7,20 +7,22 @@ import java.io.Serializable;
 
 @Getter
 @Setter
-public class Agenda implements Serializable {
+public class AgendaItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private int day;
-    private String start;
-    private String end;
+    private int idTalk;
+    private Integer start;
+    private Integer end;
     private String title;
 
-    public Agenda(int day, String start, String end, String title){
+    public AgendaItem(int day, Integer start, Integer end, String title, int idTalk){
         this.day = day;
         this.start = start;
         this.end = end;
         this.title = title;
+        this.idTalk = idTalk;
     }
 
     @Override
