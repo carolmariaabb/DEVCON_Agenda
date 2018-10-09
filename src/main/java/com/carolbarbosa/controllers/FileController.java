@@ -74,13 +74,14 @@ public class FileController {
         List<AgendaItem> agenda = new AgendaSolver().createAgenda(talksAuxList, 1);
         //seta palestras que ja estao na agenda
         for(AgendaItem a : agenda){
-            talkService.getByIndex(a.getIdTalk()).setIsOnAgenda(true);
+            if(a.getIdTalk() >= 0) talkService.getByIndex(a.getIdTalk()).setIsOnAgenda(true);
         }
         talksAuxList = new ArrayList<>(talkService.findAll().stream().filter(not(Talk::getIsOnAgenda)).collect(Collectors.toList()));
         List<AgendaItem> agendaDay2 = new AgendaSolver().createAgenda(talksAuxList, 2);
         agenda.addAll(agendaDay2);
         agendaItemService.setAgenda(agenda);
 
+        //lista de palestras fora da agenda
         talksAuxList = new ArrayList<>(talkService.findAll().stream().filter(not(Talk::getIsOnAgenda)).collect(Collectors.toList()));
 
         redirectAttributes.addFlashAttribute("message", "Arquivo " + file.getOriginalFilename() + " enviado com sucesso!");
@@ -115,20 +116,37 @@ public class FileController {
     }
 
     public String getOutputCSV(){
+        Integer startTalk = 540;
         DecimalFormat formatter = new DecimalFormat("00");
+
         StringBuilder result = new StringBuilder();
         result.append("day;start;end;title");
         result.append(CR_LF);
+
         for(AgendaItem agendaItem : agendaItemService.findAll()){
-            String hourStart = formatter.format(agendaItem.getStart()/60);
-            String minuteStart = formatter.format(agendaItem.getStart() % 60);
+            if(startTalk < agendaItem.getStart()){
+                String hourStart = formatter.format(startTalk/60);
+                String minuteStart = formatter.format(startTalk % 60);
 
-            String hourEnd = formatter.format(agendaItem.getEnd()/60);
-            String minuteEnd = formatter.format(agendaItem.getEnd() % 60);
+                String hourEnd = formatter.format(agendaItem.getStart()/60);
+                String minuteEnd = formatter.format(agendaItem.getStart() % 60);
 
-            result.append(agendaItem.getDay() + ";" + hourStart + ":" + minuteStart + ";" + hourEnd
-                    + ":" + minuteEnd + ";" + agendaItem.getTitle());
-            result.append(CR_LF);
+                result.append(agendaItem.getDay() + ";" + hourStart + ":" + minuteStart + ";" + hourEnd
+                        + ":" + minuteEnd + ";GAP");
+                result.append(CR_LF);
+            }
+            if(agendaItem.getIdTalk() >= 0){
+                String hourStart = formatter.format(agendaItem.getStart()/60);
+                String minuteStart = formatter.format(agendaItem.getStart() % 60);
+
+                String hourEnd = formatter.format(agendaItem.getEnd()/60);
+                String minuteEnd = formatter.format(agendaItem.getEnd() % 60);
+
+                result.append(agendaItem.getDay() + ";" + hourStart + ":" + minuteStart + ";" + hourEnd
+                        + ":" + minuteEnd + ";" + agendaItem.getTitle());
+                result.append(CR_LF);
+            }
+            startTalk = agendaItem.getEnd();
         }
         return result.toString();
     }
