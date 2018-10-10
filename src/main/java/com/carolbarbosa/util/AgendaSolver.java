@@ -32,26 +32,18 @@ public class AgendaSolver {
         createAgendaItems(knapsack2, 90, agendaItemList, day);
         talks = new ArrayList<>(talks.stream().filter(not(Talk::getIsOnAgenda)).collect(Collectors.toList()));
 
-        for(int i = agendaItemList.size() - 1; i >= 0; i--){
-            //ultima palestra da lista
-            if(agendaItemList.get(i).getIdTalk() >= 0){
-                //ultimo palestra acabou antes das 13h
-                if(agendaItemList.get(i).getEnd() < 780){
-                    int duration = agendaItemList.get(i).getEnd() - agendaItemList.get(i).getStart();
-                    //coloca pra acabar as 13h
-                    agendaItemList.get(i).setEnd(780);
-                    agendaItemList.get(i).setStart(780 - duration);
+        if(agendaItemList.size() > 0){
+            //break comecou antes de 13h
+            if(agendaItemList.get(agendaItemList.size() - 1).getStart() < 780){
+                //atualiza pra dps das 13h
+                agendaItemList.get(agendaItemList.size() - 1).setStart(780);
+                agendaItemList.get(agendaItemList.size() - 1).setEnd(780 + 90);
 
-                    //atualiza ultimo break pra dps das 13h
-                    agendaItemList.get(agendaItemList.size() - 1).setEnd(780 + 90);
-                    agendaItemList.get(agendaItemList.size() - 1).setStart(780);
-
-                    durationInc = 240 + 90;
-                    startTalk = 780 + 90;
-                }
-                break;
+                durationInc = 240 + 90;
+                startTalk = 780 + 90;
             }
         }
+
         //terceiro intervalo deve acontecer antes das 16h30; 16h30 - 9 = 7h30min = 450min
         Knapsack knapsack3 = solveKnapsack(talks, 449 - durationInc);
         createAgendaItems(knapsack3, 30, agendaItemList, day);
@@ -67,9 +59,9 @@ public class AgendaSolver {
                 //ultimo palestra acabou antes das 18h
                 if(agendaItemList.get(i).getEnd() < 1080){
                     int duration = agendaItemList.get(i).getEnd() - agendaItemList.get(i).getStart();
-                    //coloca pra acabar as 18h
-                    agendaItemList.get(i).setEnd(1080);
-                    agendaItemList.get(i).setStart(1080 - duration);
+                    //coloca pra acabar as 19h
+                    agendaItemList.get(i).setEnd(1140);
+                    agendaItemList.get(i).setStart(1140 - duration);
                 }
                 break;
             }
